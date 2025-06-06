@@ -17,6 +17,9 @@ pub struct ProbeUsb {
     defmt_consumer: defmt_brtt::DefmtConsumer,
 }
 
+const MANUFACTURER: &'static str = "Probe-rs development team";
+const PRODUCT: &'static str = "Rusty Probe with CMSIS-DAP v1/v2 Support";
+
 impl ProbeUsb {
     #[inline(always)]
     pub fn new(
@@ -32,13 +35,18 @@ impl ProbeUsb {
         let id = crate::device_signature::device_id_hex();
         info!("Device ID: {}", id);
 
-        let descriptors = StringDescriptors::new(LangID::EN)
-            .manufacturer("Probe-rs development team")
-            .product("Rusty Probe with CMSIS-DAP v1/v2 Support")
+        let descriptors_en = StringDescriptors::new(LangID::EN)
+            .manufacturer(MANUFACTURER)
+            .product(PRODUCT)
+            .serial_number(id);
+
+        let descriptors_en_us = StringDescriptors::new(LangID::EN_US)
+            .manufacturer(MANUFACTURER)
+            .product(PRODUCT)
             .serial_number(id);
 
         let device = UsbDeviceBuilder::new(usb_bus, UsbVidPid(0x1209, 0x4853))
-            .strings(&[descriptors])
+            .strings(&[descriptors_en, descriptors_en_us])
             .unwrap() // unwrap: Error is returned only if more than 16 languages are supplied.
             .device_class(0)
             .max_packet_size_0(64)
